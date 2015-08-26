@@ -129,12 +129,9 @@
 	    var discovery_port = 14002;
             var nodo_hello_interval = 1000;
             var nodo_check_interval = 3000;
-            var nodo_timeout = 12000;
+            var nodo_timeout = 5000;
             var master_timeout = 15000;
-            var nodo = new Discover ({helloInterval : nodo_hello_interval, checkInterval : nodo_check_interval, nodeTimeout : nodo_timeout, masterTimeout : master_timeout, port : discovery_port});
-	    nodo.stop();
-            nodo.on("added", function () {actualizar_amigos()});
-            nodo.on("removed", function () {actualizar_amigos()});
+	    var nodo;
            
             var server_child;
 
@@ -331,13 +328,13 @@
             function actualizar_amigos() {
                 e = $("<div></div>");
 		nodo.eachNode ( function (node) {
-                    tmp = '<div class="izq media thumbnail" data-ip="' + node.address + '"> \
-                      <div class="media-left"><a href="#"><img class="media-object" src="img/avatar-neutro.png" width="81" height="86"></a></div> \
-                      <div class="media-body"><h4 class="media-heading">' + node.advertisement + '</h4></div> \
-                    </div>';
-                    $(e).append($(tmp).on('click', function () {
-                        elegir_amigo($(this).data('ip'));
-                    }));
+			    tmp = '<div class="izq media thumbnail" data-ip="' + node.address + '"> \
+			      <div class="media-left"><a href="#"><img class="media-object" src="img/avatar-neutro.png" width="81" height="86"></a></div> \
+			      <div class="media-body"><h4 class="media-heading">' + node.advertisement + '</h4></div> \
+			    </div>';
+			    $(e).append($(tmp).on('click', function () {
+				elegir_amigo($(this).data('ip'));
+			    }));
                 } );
                 $('#listado').html(e);
                 $('#listado').show();
@@ -383,8 +380,10 @@
                     set_usuario_info(nombre);
                     server_child = init_server(nombre); //Iniciar servidor
                     $("#amigos .thumbnail .caption").find("h3").html(nombre);
+          	    nodo = new Discover ({helloInterval : nodo_hello_interval, checkInterval : nodo_check_interval, nodeTimeout : nodo_timeout, masterTimeout : master_timeout, port : discovery_port});
 		    nodo.advertise(nombre);
-		    nodo.start();
+           	    nodo.on("added", function () {actualizar_amigos()});
+           	    nodo.on("removed", function () {actualizar_amigos()});
                     setTimeout(function () {
                         init(); //Me conecto a mi propio server
                     }, RETARDO_MIN);
