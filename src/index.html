@@ -131,8 +131,11 @@
             var nodo_check_interval = 3000;
             var nodo_timeout = 12000;
             var master_timeout = 15000;
-            //var nodo = new Discover ({helloInterval : 1000, checkInterval : 3000, nodeTimeout : 10000, masterTimeout : 15000, port : 14002});
-
+            var nodo = new Discover ({helloInterval : nodo_hello_interval, checkInterval : nodo_check_interval, nodeTimeout : nodo_timeout, masterTimeout : master_timeout, port : discovery_port});
+	    nodo.stop();
+            nodo.on("added", function () {actualizar_amigos()});
+            nodo.on("removed", function () {actualizar_amigos()});
+           
             var server_child;
 
 	    var usuario_info = {};
@@ -160,9 +163,6 @@
                 usuario_info.nro_jugador = 'jugador1';
                 usuario_info.ip = local_ip;
                 registrar_espera(socket);
-		nodo.on("added", actualizar_amigos());
-		nodo.on("removed", actualizar_amigos());
-                //buscar_amigos();
             }
 
             function elegir_amigo(amigo_ip) {
@@ -383,8 +383,8 @@
                     set_usuario_info(nombre);
                     server_child = init_server(nombre); //Iniciar servidor
                     $("#amigos .thumbnail .caption").find("h3").html(nombre);
-                    var nodo = new Discover ({helloInterval : nodo_hello_interval, checkInterval : nodo_check_interval, nodeTimeout : nodo_timeout, masterTimeout : master_timeout, port : discovery_port});
 		    nodo.advertise(nombre);
+		    nodo.start();
                     setTimeout(function () {
                         init(); //Me conecto a mi propio server
                     }, RETARDO_MIN);
