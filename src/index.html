@@ -73,7 +73,7 @@
                     <img src="img/avatar-neutro.png" alt="Usuario" />
                     <div class="caption"><h3></h3></div>
                 </div>
-                <p><a href="#" id="actualizar" class="btn btn-primary" role="button">Actualizar</a></p>
+                <!--<p><a href="#" id="actualizar" class="btn btn-primary" role="button">Actualizar</a></p>-->
                 <div id="listado" class="fder col-xs-6"></div>
             </article>
             <article id="juego">
@@ -126,13 +126,12 @@
             var win = gui.Window.get();
             var util = require('util');
 	    var Discover = require ("./lib/discover.js");
-	    var discovery_port = "14002";
-            var nodo_hello_interval = "1000";
-            var nodo_check_interval = "3000";
-            var nodo_timeout = "12000";
-            var master_timeout = "15000";
-            //var nodo = new Discover ({helloInterval : nodo_hello_interval, checkInterval : nodo_check_interval, nodeTimeout : nodo_timeout, masterTimeout : master_timeout, port : discovery_port});
-            var nodo = new Discover ({helloInterval : 1000, checkInterval : 3000, nodeTimeout : 10000, masterTimeout : 15000, port : 14002});
+	    var discovery_port = 14002;
+            var nodo_hello_interval = 1000;
+            var nodo_check_interval = 3000;
+            var nodo_timeout = 12000;
+            var master_timeout = 15000;
+            //var nodo = new Discover ({helloInterval : 1000, checkInterval : 3000, nodeTimeout : 10000, masterTimeout : 15000, port : 14002});
 
             var server_child;
 
@@ -161,7 +160,9 @@
                 usuario_info.nro_jugador = 'jugador1';
                 usuario_info.ip = local_ip;
                 registrar_espera(socket);
-                buscar_amigos();
+		nodo.on("added", actualizar_amigos());
+		nodo.on("removed", actualizar_amigos());
+                //buscar_amigos();
             }
 
             function elegir_amigo(amigo_ip) {
@@ -300,45 +301,44 @@
                 });
             }
 
-            var amigos = {};
-            function buscar_amigos() {
-                var spawn = require('child_process').spawn;
-                var proceso = spawn("avahi-browse", ['-a', '-r', '-p', '--ignore-local']);
-                var data = '';
-                var lineas;
+            //var amigos = {};
+            //function buscar_amigos() {
+            //    var spawn = require('child_process').spawn;
+            //    var proceso = spawn("avahi-browse", ['-a', '-r', '-p', '--ignore-local']);
+            //    var data = '';
+            //    var lineas;
 
-                proceso.stdout.on("data", function (chunk) {
-                    lineas = ("" + chunk).split("\n");
-                    for (i = 0; lineas.length > i; i++) {
-                        if (/huayra_mxt/.test(lineas[i])) {
-                            campos = lineas[i].split(";");
-                            // tipo
-                            if (campos[0] == '=') {
-                                ip = campos[3].split('-')[1].replace(/\\/gi, "");
-                                nombre = campos[3].split('-')[2];
-                                amigos[ip] = nombre;
-                            }
-                            if (campos[0] == '-') {
-                                ip = campos[3].split('-')[1].replace(/\\/gi, "");
-                                delete amigos[ip];
-                            }
-                        }
-                    }
-                });
-            }
+            //    proceso.stdout.on("data", function (chunk) {
+            //        lineas = ("" + chunk).split("\n");
+            //        for (i = 0; lineas.length > i; i++) {
+            //            if (/huayra_mxt/.test(lineas[i])) {
+            //                campos = lineas[i].split(";");
+            //                // tipo
+            //                if (campos[0] == '=') {
+            //                    ip = campos[3].split('-')[1].replace(/\\/gi, "");
+            //                    nombre = campos[3].split('-')[2];
+            //                    amigos[ip] = nombre;
+            //                }
+            //                if (campos[0] == '-') {
+            //                    ip = campos[3].split('-')[1].replace(/\\/gi, "");
+            //                    delete amigos[ip];
+            //                }
+            //            }
+            //        }
+            //    });
+            //}
 
             function actualizar_amigos() {
                 e = $("<div></div>");
-                for (var k in amigos) {
-                    amigo = amigos[k];
-                    tmp = '<div class="izq media thumbnail" data-ip="' + k + '"> \
+		nodo.eachNode ( function (node) {
+                    tmp = '<div class="izq media thumbnail" data-ip="' + node.address + '"> \
                       <div class="media-left"><a href="#"><img class="media-object" src="img/avatar-neutro.png" width="81" height="86"></a></div> \
-                      <div class="media-body"><h4 class="media-heading">' + amigos[k] + '</h4></div> \
+                      <div class="media-body"><h4 class="media-heading">' + node.advertisement + '</h4></div> \
                     </div>';
                     $(e).append($(tmp).on('click', function () {
                         elegir_amigo($(this).data('ip'));
                     }));
-                }
+                } );
                 $('#listado').html(e);
                 $('#listado').show();
             }
@@ -383,6 +383,7 @@
                     set_usuario_info(nombre);
                     server_child = init_server(nombre); //Iniciar servidor
                     $("#amigos .thumbnail .caption").find("h3").html(nombre);
+                    var nodo = new Discover ({helloInterval : nodo_hello_interval, checkInterval : nodo_check_interval, nodeTimeout : nodo_timeout, masterTimeout : master_timeout, port : discovery_port});
 		    nodo.advertise(nombre);
                     setTimeout(function () {
                         init(); //Me conecto a mi propio server
@@ -390,10 +391,10 @@
                 }
             });
 
-            $("#actualizar").on("click", function (event) {
-                event.stopPropagation();
-                actualizar_amigos()
-            });
+            //$("#actualizar").on("click", function (event) {
+            //    event.stopPropagation();
+            //    actualizar_amigos()
+            //});
 
 
             $("#cerrar").on("click", function () {
