@@ -2,7 +2,7 @@ var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var local_ip = require('my-local-ip')()
-var spawn = require('child_process').spawn;
+//var spawn = require('child_process').spawn;
 var jugadores = {};
 var resultados = [];
 var MAX_JUGADORES = 2;
@@ -184,7 +184,7 @@ function repartir_cartas(jugadores) {
     jugadores.jugador2.mazo = mazo_jugador2;
 }
 
-function publicar_servidor()
+/*function publicar_servidor()
 {
     aps = spawn('avahi-publish-service', [ '-s', 'huayra_mxt-' + local_ip + '-' + usuario, '_http._tcp', PUERTO ]);
     aps.stdout.on('data', function (data) {
@@ -204,7 +204,7 @@ function publicar_servidor()
     });
 
     return aps;
-}
+}*/
 
 var usuario;
 process.argv.forEach(function (val, index, array) {
@@ -228,4 +228,4 @@ if (!usuario) {
 
 
 iniciar_servidor(PUERTO);
-var aps = publicar_servidor();
+//var aps = publicar_servidor();
