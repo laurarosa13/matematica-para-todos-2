@@ -128,9 +128,9 @@
 	    var Discover = require ("./lib/discover.js");
 	    var discovery_port = 14002;
             var nodo_hello_interval = 1000;
-            var nodo_check_interval = 3000;
-            var nodo_timeout = 5000;
-            var master_timeout = 15000;
+            var nodo_check_interval = 2000;
+            var nodo_timeout = 12000;
+            var master_timeout = 13000;
 	    var nodo;
            
             var server_child;
@@ -384,6 +384,7 @@
 		    nodo.advertise(nombre);
            	    nodo.on("added", function () {actualizar_amigos()});
            	    nodo.on("removed", function () {actualizar_amigos()});
+           	    nodo.on("master", function () {actualizar_amigos()});
                     setTimeout(function () {
                         init(); //Me conecto a mi propio server
                     }, RETARDO_MIN);
