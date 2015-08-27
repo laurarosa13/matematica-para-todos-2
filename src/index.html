@@ -122,15 +122,18 @@
         </div>
         <script>
        $(document).ready(function () {
+
+	    $('#nombre').focus();
+
             var gui = require('nw.gui');
             var win = gui.Window.get();
             var util = require('util');
 	    var Discover = require ("./lib/discover.js");
 	    var discovery_port = 14002;
             var nodo_hello_interval = 1000;
-            var nodo_check_interval = 3000;
-            var nodo_timeout = 5000;
-            var master_timeout = 15000;
+            var nodo_check_interval = 2000;
+            var nodo_timeout = 12500;
+            var master_timeout = 13000;
 	    var nodo;
            
             var server_child;
@@ -166,10 +169,7 @@
                 var socket = io("http://" + amigo_ip + ":3000/", {query: 'nro_jugador=jugador2&nombre_jugador=' + usuario_info.nombre});
                 usuario_info.nro_jugador = 'jugador2';
                 usuario_info.ip = amigo_ip;
-
-		//Hack rapido
-		var exec = require('child_process').exec;
-                exec('killall avahi-publish-service');
+		nodo.stop();
 
                 registrar_espera(socket);
             }
@@ -241,19 +241,9 @@
 			    win.close();
                         }, RETARDO_MAX);
 
-//                        document.getElementById('titulo').innerHTML = msg + ' Se retiro <br> Es el fin del juego';
-//                        document.getElementById("mazos").style.visibility = "hidden";
-//                        document.getElementById("opciones").style.visibility = "hidden";
-//                        document.getElementById("cartas").style.visibility = "hidden";
-//                        document.getElementById('nombres').innerHTML = "";
                     });
 
                     socket.on('fin', function (resultados) {
-//                        document.getElementById('titulo').innerHTML = 'Es el fin del juego <br> Estos son los resultados';
-//                        document.getElementById("mazos").style.visibility = "hidden";
-//                        document.getElementById("opciones").style.visibility = "hidden";
-//                        document.getElementById("cartas").style.visibility = "hidden";
-                        //document.getElementById('resultados').innerHTML = resultados;
                         socket.disconnect();
                     });
 
@@ -298,33 +288,6 @@
                 });
             }
 
-            //var amigos = {};
-            //function buscar_amigos() {
-            //    var spawn = require('child_process').spawn;
-            //    var proceso = spawn("avahi-browse", ['-a', '-r', '-p', '--ignore-local']);
-            //    var data = '';
-            //    var lineas;
-
-            //    proceso.stdout.on("data", function (chunk) {
-            //        lineas = ("" + chunk).split("\n");
-            //        for (i = 0; lineas.length > i; i++) {
-            //            if (/huayra_mxt/.test(lineas[i])) {
-            //                campos = lineas[i].split(";");
-            //                // tipo
-            //                if (campos[0] == '=') {
-            //                    ip = campos[3].split('-')[1].replace(/\\/gi, "");
-            //                    nombre = campos[3].split('-')[2];
-            //                    amigos[ip] = nombre;
-            //                }
-            //                if (campos[0] == '-') {
-            //                    ip = campos[3].split('-')[1].replace(/\\/gi, "");
-            //                    delete amigos[ip];
-            //                }
-            //            }
-            //        }
-            //    });
-            //}
-
             function actualizar_amigos() {
                 e = $("<div></div>");
 		nodo.eachNode ( function (node) {
@@ -353,7 +316,7 @@
                     server_child.kill('SIGTERM');
                 }
 
-		server_child = init_server(usuario_info.nombre); //Iniciar servidor
+		server_child = init_server(usuario_info.nombre);// Iniciar servidor
 
 	    }
             
@@ -384,17 +347,12 @@
 		    nodo.advertise(nombre);
            	    nodo.on("added", function () {actualizar_amigos()});
            	    nodo.on("removed", function () {actualizar_amigos()});
+           	    nodo.on("master", function () {actualizar_amigos()});
                     setTimeout(function () {
                         init(); //Me conecto a mi propio server
                     }, RETARDO_MIN);
                 }
             });
-
-            //$("#actualizar").on("click", function (event) {
-            //    event.stopPropagation();
-            //    actualizar_amigos()
-            //});
-
 
             $("#cerrar").on("click", function () {
                 win.close();

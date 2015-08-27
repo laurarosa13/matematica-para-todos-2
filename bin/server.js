@@ -2,7 +2,7 @@ var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var local_ip = require('my-local-ip')()
-//var spawn = require('child_process').spawn;
+var spawn = require('child_process').spawn;
 var jugadores = {};
 var resultados = [];
 var MAX_JUGADORES = 2;
@@ -99,7 +99,6 @@ function iniciar_servidor(PUERTO) {
 	    console.log("Matamos publicacon con avahi");
             console.log("Arrancamos el juego");
 
-	    aps.kill();
             jugadores.contadorGuerra = 0;
             repartir_cartas(jugadores);
             
@@ -112,13 +111,6 @@ function iniciar_servidor(PUERTO) {
 	    console.log('El cliente se desconecto');	
 	    io.emit('retiro');
 	    jugadores = {};
-	/*
-            var index = jugadores.indexOf(jugador_ip);
-            jugadores.splice(index, 1);
-            io.emit('retiro', jugador_ip);
-            desconectado(socket);
-            console.log('Hay conectados ' + get_jugadores_count(jugadores) + ' jugadores');
-	*/
         });
     });
 
@@ -184,41 +176,12 @@ function repartir_cartas(jugadores) {
     jugadores.jugador2.mazo = mazo_jugador2;
 }
 
-/*function publicar_servidor()
-{
-    aps = spawn('avahi-publish-service', [ '-s', 'huayra_mxt-' + local_ip + '-' + usuario, '_http._tcp', PUERTO ]);
-    aps.stdout.on('data', function (data) {
-        //console.log("stderr", data);
-    });
-
-    aps.on('error', function (codigo) {
-        console.error("ERROR: no se puede ejecutar avahi-publish-service", codigo);
-    });
-
-    aps.on('exit', function (codigo) {
-        if (codigo) {
-            console.log("Error, el comando retorno: " + codigo);
-        } else {
-            console.log("ha finalizado el comando avahi-publish-service");
-        }
-    });
-
-    return aps;
-}*/
-
 var usuario;
 process.argv.forEach(function (val, index, array) {
     if (/--usuario=/.test(val)) {
         usuario = val.split('=')[1];
     }
 });
-
-process.on('SIGTERM', function() {
-	aps.kill();
-
-	process.exit(0);
-});
-
 
 if (!usuario) {
     console.log("ERROR: No se especifico usuario");
@@ -228,4 +191,3 @@ if (!usuario) {
 
 
 iniciar_servidor(PUERTO);
-//var aps = publicar_servidor();
