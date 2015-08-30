@@ -96,8 +96,10 @@ function iniciar_servidor(PUERTO) {
         conectado(socket);
         if (get_jugadores_count(jugadores) == MAX_JUGADORES) {
             console.log("Ya tenemos a todos los jugadores");
-	    console.log("Matamos publicacon con avahi");
             console.log("Arrancamos el juego");
+
+	    console.log("Detenemos discover de nodos para deslistarnos");
+            io.emit('deslistar');
 
             jugadores.contadorGuerra = 0;
             repartir_cartas(jugadores);
@@ -181,6 +183,10 @@ process.argv.forEach(function (val, index, array) {
     if (/--usuario=/.test(val)) {
         usuario = val.split('=')[1];
     }
+});
+
+process.on('SIGTERM', function() {
+    process.exit(0);
 });
 
 if (!usuario) {
